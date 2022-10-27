@@ -1,44 +1,53 @@
 Set
-y "years" /1*20/
-d "days" /1*365/
-h "hour" /1*24/
-f "fuel plants" /1*10 / 
-w "wind plants" / 1*10 / 
-s "solar plants" /1*10 /
-pr "private generators" /1*10 / 
-p "plant type" /f, w, s, pr /
-pc "conventional" /f, pr /
-pr "renewables" / w, s /
-;
+Years "Year"
+Days
+Hours
+Tech_Type "Type of Technology"
+Tech_Type_Conv
+Tech_Type_RE
+Plants "Names of the different Power Plants"
 
+
+PlantParametersDset
+
+;
+Alias
+(Years,y)
+(Days,d)
+(Hours,h)
+(Plants,p)
+   
 Parameter
-df(y) "discount factor of year y"
-mc_f(f) "minimum capacity of fuel plants"
-mc_s(s) "minimum capacity of solar plants"
-test1(y)
-test2(y)
-costs(p)
-wind_cap(w)
-;
 
-Scalar
-disc_f "discount factor" / 0.08 /
-;
-df(y) = 1/(1+disc_f)**ord(y)
-;
-test1(y) = 1*ord(y)
-;
-test2(y) = 1*card(y)
-;
-wind_cap(w) = 1000
-;
-;
+PlantParameters(Plants,PlantParametersDset)
+*EconParameters (Years,EconParametersDset)
 
-Variable
-new_wind(w)
-new_solar(s)
+IC(Plants)
+EffectiveCapacity(Plants)
+*UnitEfficiency(Plants)
+*EmissionCoeff(Plants)
+*HeatRate(Plants)
+*UnitEfficiency(Plants)
+*FuelCosts(Plants)
+DiscountFactor(y)
 
 ;
 
 
-EXECUTE_UNLOAD 'Imported data'
+$CALL GDXXRW Input_database_GEP.xlsx skipempty=0 trace=2 index=Index!C1
+$gdxin Input_database_GEP.gdx
+$load Years, Days, Hours, Tech_Type, Plants
+$load PlantParametersDset, EconParametersDset
+$load PlantParameters, DiscountFactor
+*$loaddc 
+$gdxin
+;
+
+IC(p)                         = PlantParameters(p,"InstalledCapacity"); 
+EffectiveCapacity(p)          = PlantParameters(p,"EffectiveCapacity");
+*df(y)                         = DicountFactor(y,"DiscountFactor");
+
+
+EXECUTE_UNLOAD 'ALL_INPUT_DATA';
+
+
